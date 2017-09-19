@@ -1,0 +1,69 @@
+<html>
+<head>
+    <title>DaftChristmas</title>
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/coffee-script.js"></script>
+    <script type="text/javascript" src="https://threejs.org/build/three.js"></script>
+    <script type="text/javascript" src="lib/STLLoader.js"></script>
+    <script type="text/javascript" src="lib/ColladaLoader.js"></script>
+    <style>body {background-color: black;margin: 0px;overflow: hidden;}</style>
+</head>
+<body>
+    <div id="webgl-preview"></div>
+    <script type="text/coffeescript">
+    class window.ThreeJSFrame
+        renderer: null
+        preview: null
+        constructor: ()->
+            @renderer = new THREE.WebGLRenderer(antialias: true)
+            @preview = $('#webgl-preview')
+            @preview.append(@renderer.domElement)
+            document.addEventListener('mousemove', (e)=> @?.onMouseMove(e))
+            @camera = new THREE.PerspectiveCamera(45, 3, 0.1, 10000)
+            @scene = new THREE.Scene()
+            @scene.add(@camera)
+            @cameraResizeForWindow()
+            @loader = new THREE.ColladaLoader()
+            @loader.load('scene.dae', ((collada)=>
+                @model = collada.scene
+                @scene.add(@model)
+            ))
+            window.addEventListener('resize', @cameraResizeForWindow, false)
+            @?.onInitialize()
+            @animate()
+
+        cameraResizeForWindow: =>
+            @camera.aspect = window.innerWidth / window.innerHeight;
+            @camera.updateProjectionMatrix();
+            @renderer.setSize(window.innerWidth, window.innerHeight)
+
+        animate: ->
+            @render()
+            window.requestAnimationFrame(=> @animate())
+
+        render: ->
+            @?.onRender()
+            @renderer.render(@scene, @camera)
+
+
+    </script>
+    <script type="text/coffeescript">
+        class window.ThreeJSApp extends window.ThreeJSFrame
+            onInitialize: ->
+                @camera.position.set(-1, 1, 5)
+                @camera.lookAt(new THREE.Vector3(0, 0.5, 0))
+
+            onMouseMove: (e)->
+                x = e.clientX / window.innerWidth
+                y = 1.5 - (e.clientY / window.innerHeight)
+                @camera.lookAt(new THREE.Vector3(x, y,0))
+
+            onRender: ->
+                @model?.rotation.y += 0.003
+
+    </script>
+    <script type="text/coffeescript">
+        window.t = new window.ThreeJSApp()
+    </script>
+</body>
+</html>
