@@ -85,10 +85,30 @@
                     else
                         v.y = (depth/2 * Math.random()) + depth/2
 
+            createCircleTexture: (color, size)->
+                matCanvas = document.createElement('canvas')
+                matCanvas.width = matCanvas.height = size
+                matContext = matCanvas.getContext('2d')
+                texture = new THREE.Texture(matCanvas)
+                center = size / 2
+                matContext.beginPath()
+                matContext.arc(center, center, size/2, 0, 2 * Math.PI, false)
+                matContext.closePath()
+                matContext.fillStyle = color
+                matContext.fill()
+
+                texture.needsUpdate = true
+                return texture
 
             createSnow: (numParticles = 1000, depth = 10)->
                 systemGeometry = new THREE.Geometry()
-                systemMaterial = new THREE.PointsMaterial(color: 0xFFFFFF, size: 0.1, opacity: 0.5, transparent: true)
+                systemMaterial = new THREE.PointsMaterial(
+                    size: 0.1,
+                    opacity: 0.5,
+                    transparent: true,
+                    depthWrite: false
+                    map: @createCircleTexture('#ffffff', 256)
+                )
                 for i in [0..numParticles]
                     systemGeometry.vertices.push(new THREE.Vector3(@rand(depth), @rand(depth), @rand(depth)))
                 @model_group.add(@particleSystem = new THREE.Points(systemGeometry, systemMaterial))
