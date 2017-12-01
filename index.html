@@ -6,6 +6,7 @@
     <script type="text/javascript" src="https://threejs.org/build/three.js"></script>
     <script type="text/javascript" src="lib/STLLoader.js"></script>
     <script type="text/javascript" src="lib/ColladaLoader.js"></script>
+    <script type="text/javascript" src="lib/Particle3D.js"></script>
     <style>body {background-color: black;margin: 0px;overflow: hidden;}</style>
 </head>
 <body>
@@ -48,10 +49,13 @@
 
     </script>
     <script type="text/coffeescript">
+        Math.randomRange = ((min, max) -> Math.random() * (max - min) + min)
         class window.ThreeJSApp extends window.ThreeJSFrame
+            particles: []
             onInitialize: ->
                 @camera.position.set(-1, 1, 5)
                 @camera.lookAt(new THREE.Vector3(0, 0.5, 0))
+                @createSnow()
 
             onMouseMove: (e)->
                 x = e.clientX / window.innerWidth
@@ -60,6 +64,23 @@
 
             onRender: ->
                 @model?.rotation.y += 0.003
+                @particles.forEach (p)-> p.updatePhysics(1,0)
+
+            createSnow: ->
+                particleImage = new Image()
+                particleImage.src = 'snowflake2.png'
+                material = new THREE.ParticleBasicMaterial( { map: new THREE.Texture(particleImage) } );
+
+                for i in [0..500]
+                    particle = new Particle3D( material)
+                    particle.position.x = Math.random()
+                    particle.position.y = Math.random()
+                    particle.position.z = Math.random()
+                    particle.scale.x = particle.scale.y =  0.01
+                    @scene.add( particle )
+
+                    @particles.push(particle)
+
 
     </script>
     <script type="text/coffeescript">
