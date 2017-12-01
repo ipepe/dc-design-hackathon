@@ -31,8 +31,9 @@
                 @model = collada.scene
                 @model_group.add(@model)
                 @model.children[0].decay = 14
-                @model.children[0].distance = 10
+                @model.children[0].distance = 14
                 @model.children[0].intensity = 10
+                @model.children[1].material[0].emissiveIntensity = 0.20
                 @model.children.forEach (c)-> c.castShadow = c.receiveShadow = true
             ))
             window.addEventListener('resize', @cameraResizeForWindow, false)
