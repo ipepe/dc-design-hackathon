@@ -19,7 +19,7 @@
             @preview = $('#webgl-preview')
             @preview.append(@renderer.domElement)
             document.addEventListener('mousemove', (e)=> @?.onMouseMove(e))
-            @camera = new THREE.PerspectiveCamera(45, 3, 0.1, 10000)
+            @camera = new THREE.PerspectiveCamera(30, 3, 0.1, 10000)
             @scene = new THREE.Scene()
             @scene.add(@camera)
             @model_group = new THREE.Group()
@@ -29,6 +29,9 @@
             @loader.load('scene.dae', ((collada)=>
                 @model = collada.scene
                 @model_group.add(@model)
+                @model.children[0].decay = 14
+                @model.children[0].distance = 10
+                @model.children[0].intensity = 10
             ))
             window.addEventListener('resize', @cameraResizeForWindow, false)
             @?.onInitialize()
@@ -54,6 +57,7 @@
             onInitialize: ->
                 @camera.position.set(-1, 1, 5)
                 @camera.lookAt(new THREE.Vector3(0, 1, 0))
+                @scene.fog = new THREE.FogExp2(0x000000, 0.05)
                 @createSnow()
 
             onMouseMove: (e)->
