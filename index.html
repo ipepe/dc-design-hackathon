@@ -47,11 +47,43 @@
 
 
     </script>
+    <script type="x-shader/x-vertex" id="step07_vs">
+			uniform float radiusX;
+			uniform float radiusZ;
+			uniform float size;
+			uniform float scale;
+			uniform float height;
+			uniform float elapsedTime;
+			uniform float speedH;
+			uniform float speedV;
+			void main() {
+				vec3 pos = position;
+				pos.x += cos((elapsedTime + position.z) * 0.25 * speedH) * radiusX;
+				pos.y = mod(pos.y - elapsedTime * speedV, height);
+				pos.z += sin((elapsedTime + position.x) * 0.25 * speedH) * radiusZ;
+				vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
+				gl_PointSize = size * ( scale / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+    </script>
+
+    <script type="x-shader/x-fragment" id="step09_fs">
+			uniform vec3 color;
+			uniform float opacity;
+			uniform sampler2D texture;
+			void main() {
+				vec4 texColor = texture2D( texture, gl_PointCoord );
+				gl_FragColor = texColor * vec4( color, opacity );
+			}
+    </script>
+
     <script type="text/coffeescript">
         class window.ThreeJSApp extends window.ThreeJSFrame
             onInitialize: ->
                 @camera.position.set(-1, 1, 5)
                 @camera.lookAt(new THREE.Vector3(0, 0.5, 0))
+                @scene.fog = new THREE.Fog(0x000000, 4, 10)
+                @createSnow()
 
             onMouseMove: (e)->
                 x = e.clientX / window.innerWidth
@@ -59,7 +91,54 @@
                 @camera.lookAt(new THREE.Vector3(x, y,0))
 
             onRender: ->
+                elapsedTime = @clock.getElapsedTime()
+                @particleSystem?.material.uniforms.elapsedTime.value = elapsedTime
                 @model?.rotation.y += 0.003
+
+            rand: (v)-> (v * (Math.random() - 0.5))
+            clock: new THREE.Clock()
+            createSnow: (numParticles = 1000, depth = 10)->
+                texture = THREE.ImageUtils.loadTexture('snowflake.png')
+                height = width = depth
+                particleSystemHeight = depth
+                parameters = {
+                    color: 0xFFFFFF,
+                    height: particleSystemHeight,
+                    radiusX: 2.5,
+                    radiusZ: 2.5,
+                    size: 100,
+                    scale: 0.5,
+                    opacity: 0.4,
+                    speedH: 1.0,
+                    speedV: 1.0
+                }
+                systemGeometry = new THREE.Geometry()
+                @particles = systemGeometry
+                systemMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        color:  { type: 'c', value: new THREE.Color( parameters.color ) },
+                        height: { type: 'f', value: parameters.height },
+                        elapsedTime: { type: 'f', value: 0 },
+                        radiusX: { type: 'f', value: parameters.radiusX },
+                        radiusZ: { type: 'f', value: parameters.radiusZ },
+                        size: { type: 'f', value: parameters.size },
+                        scale: { type: 'f', value: parameters.scale },
+                        opacity: { type: 'f', value: parameters.opacity },
+                        texture: { type: 't', value: texture },
+                        speedH: { type: 'f', value: parameters.speedH },
+                        speedV: { type: 'f', value: parameters.speedV }
+                    },
+                    vertexShader: document.getElementById( 'step07_vs' ).textContent,
+                    fragmentShader: document.getElementById( 'step09_fs' ).textContent,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true,
+                    depthTest: false
+                })
+                for i in [0..numParticles]
+                    systemGeometry.vertices.push(new THREE.Vector3(@rand(depth), @rand(depth), @rand(depth)))
+                @particleSystem = new THREE.Points( systemGeometry, systemMaterial )
+                @scene.add(@particleSystem)
+
 
     </script>
     <script type="text/coffeescript">
