@@ -22,11 +22,13 @@
             @camera = new THREE.PerspectiveCamera(45, 3, 0.1, 10000)
             @scene = new THREE.Scene()
             @scene.add(@camera)
+            @model_group = new THREE.Group()
+            @scene.add(@model_group)
             @cameraResizeForWindow()
             @loader = new THREE.ColladaLoader()
             @loader.load('scene.dae', ((collada)=>
                 @model = collada.scene
-                @scene.add(@model)
+                @model_group.add(@model)
             ))
             window.addEventListener('resize', @cameraResizeForWindow, false)
             @?.onInitialize()
@@ -51,7 +53,8 @@
         class window.ThreeJSApp extends window.ThreeJSFrame
             onInitialize: ->
                 @camera.position.set(-1, 1, 5)
-                @camera.lookAt(new THREE.Vector3(0, 0.5, 0))
+                @camera.lookAt(new THREE.Vector3(0, 1, 0))
+                @createSnow()
 
             onMouseMove: (e)->
                 x = e.clientX / window.innerWidth
@@ -59,7 +62,31 @@
                 @camera.lookAt(new THREE.Vector3(x, y,0))
 
             onRender: ->
-                @model?.rotation.y += 0.003
+                @model_group.rotation.y += 0.003
+                @updateParticleSystem(@clock.getDelta()/2)
+
+            rand: (v)-> (v * (Math.random() - 0.5))
+
+            clock: new THREE.Clock()
+
+            updateParticleSystem: (elapsed)->
+                depth = @particleSystem.depth
+                @particleSystem.geometry.verticesNeedUpdate = true
+                @particleSystem.geometry.vertices.forEach (v)->
+                    if v.y > 0
+                        v.y -= elapsed
+                    else
+                        v.y = (depth/2 * Math.random()) + depth/2
+
+
+            createSnow: (numParticles = 1000, depth = 10)->
+                systemGeometry = new THREE.Geometry()
+                systemMaterial = new THREE.PointsMaterial(color: 0xFFFFFF, size: 0.1, opacity: 0.5, transparent: true)
+                for i in [0..numParticles]
+                    systemGeometry.vertices.push(new THREE.Vector3(@rand(depth), @rand(depth), @rand(depth)))
+                @model_group.add(@particleSystem = new THREE.Points(systemGeometry, systemMaterial))
+                @particleSystem.depth = depth
+
 
     </script>
     <script type="text/coffeescript">
