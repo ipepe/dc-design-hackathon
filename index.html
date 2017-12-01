@@ -34,7 +34,10 @@
                 @model.children[0].distance = 14
                 @model.children[0].intensity = 10
                 @model.children[1].material[0].emissiveIntensity = 0.20
-                @model.children.forEach (c)-> c.castShadow = c.receiveShadow = true
+                @model.children.forEach (c)->
+                    c.material?.specular?.set(0,0,0)
+                    c.material?.shininess = 0
+                    c.castShadow = c.receiveShadow = true
             ))
             window.addEventListener('resize', @cameraResizeForWindow, false)
             @?.onInitialize()
