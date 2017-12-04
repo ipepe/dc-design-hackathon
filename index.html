@@ -63,7 +63,7 @@
             onInitialize: ->
                 @camera.position.set(-1, 1, 5)
                 @camera.lookAt(new THREE.Vector3(0, 1, 0))
-                @scene.fog = new THREE.FogExp2(0x000000, 0.05)
+                @scene.fog = new THREE.FogExp2(0x000000, 0.1)
                 @createSnow()
 
             onMouseMove: (e)->
@@ -73,18 +73,16 @@
 
             onRender: ->
                 @model_group.rotation.y += 0.003
-                @updateParticleSystem(@clock.getDelta()/2)
+                @updateParticleSystem()
 
             rand: (v)-> (v * (Math.random() - 0.5))
 
-            clock: new THREE.Clock()
-
-            updateParticleSystem: (elapsed)->
+            updateParticleSystem: ->
                 depth = @particleSystem.depth
                 @particleSystem.geometry.verticesNeedUpdate = true
                 @particleSystem.geometry.vertices.forEach (v)->
                     if v.y > 0
-                        v.y -= elapsed
+                        v.y -= 0.0085
                     else
                         v.y = (depth/2 * Math.random()) + depth/2
 
@@ -103,7 +101,7 @@
                 texture.needsUpdate = true
                 return texture
 
-            createSnow: (numParticles = 1000, depth = 10)->
+            createSnow: (numParticles = 500, depth = 6)->
                 systemGeometry = new THREE.Geometry()
                 systemMaterial = new THREE.PointsMaterial(
                     size: 0.1,
