@@ -14,9 +14,9 @@
     class window.ThreeJSFrame
         renderer: null
         preview: null
-        constructor: ()->
+        constructor: (shadows = true)->
             @renderer = new THREE.WebGLRenderer(antialias: true)
-            @renderer.shadowMap.enabled = true
+            @renderer.shadowMap.enabled = shadows
             @preview = $('#webgl-preview')
             @preview.append(@renderer.domElement)
             document.addEventListener('mousemove', (e)=> @?.onMouseMove(e))
@@ -118,7 +118,7 @@
 
     </script>
     <script type="text/coffeescript">
-        window.t = new window.ThreeJSApp()
+        window.t = new window.ThreeJSApp(window.location.search.indexOf('shadows=false') == -1)
     </script>
 </body>
 </html>
