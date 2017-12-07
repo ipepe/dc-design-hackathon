@@ -17,6 +17,7 @@
         preview: null
         constructor: (shadows = true)->
             @renderer = new THREE.WebGLRenderer(antialias: true)
+            @renderer.setPixelRatio(Math.min(0.8, 1600/window.innerWidth, 900/window.innerHeight))
             @renderer.shadowMap.enabled = shadows
             @preview = $('#webgl-preview')
             @preview.append(@renderer.domElement)
